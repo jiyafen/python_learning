@@ -86,11 +86,11 @@ def dateInfoTransform(result_list):
 
 if __name__ == '__main__':
     #读取xml文件
-    file_name = "./王小二.xml"
+    file_name = "F:/Code/pythonTest/testFile/王小二.xml"
     result_list = getXmlData(file_name)
     dateInfoTransform(result_list)
 
-    htmlPath = './王二小报告全集.html'
+    htmlPath = 'F:/Code/pythonTest/testFile/王二小报告全集.html'
     generationPath = './template.html'
     os.path.exists(generationPath)
     os.remove(generationPath)
