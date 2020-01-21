@@ -15,35 +15,56 @@ def getTempInfo(patten, strTemp):
 def getDecode(uid, q, url):
     params = {"uid": uid,"q": q}
     res = requests.get(url=url, params=params)
-    print(res.text)
+    #print(res.text)
     return res.text
 
 def deleteFile(generationPath):
     if os.path.exists(generationPath):
         os.remove(generationPath)
 
+def decodeFile2(path, outPath, url):
+    inFile = io.open(path, 'r', encoding='utf-8')
+    deleteFile(outPath)
+    outFile = io.open(outPath, 'w', encoding='utf-8')
+    for line in inFile:
+        findStr1 = "SEND PUBLISH"
+        findStr2 = "RECV PUBLISH"
+        if (findStr1 in line) or (findStr2 in line):
+            outFile.write(line)
+            pattern = r'Payload=<<"{(.*)">>'  #
+            tempStr = getTempInfo(pattern,line)
+            if tempStr:
+                patten = r'\\\"uid\\\":\\\"(.*)\\\"}'
+                uid = getTempInfo(patten, tempStr)
+                patten2 = r'\\\"q\\\":\\\"(.*)\\\",\\\"sign'
+                temp = getTempInfo(patten2, tempStr)
+                if temp:
+                    q = temp.replace("\\u003d", "")
+                    decodeStr = getDecode(uid, q, url)
+                    outFile.write(decodeStr + '\n')
+    outFile.close()
+    inFile.close()
+
 def decodeFile(path, outPath, url):
     inFile = io.open(path, 'r', encoding='utf-8')
     contents = inFile.read()
-    pattern = re.compile(r'Payload=<<"{(.*)">>')  # 查找数字
+    pattern = re.compile(r'Payload=<<"{(.*)">>')  #
     resultList = pattern.findall(contents)
     deleteFile(outPath)
     outFile = io.open(outPath, 'w', encoding='utf-8')
 
     for item in resultList:
-        print(item)
         patten = r'\\\"uid\\\":\\\"(.*)\\\"}'
         uid = getTempInfo(patten, item)
-        print(uid)
         patten2 = r'\\\"q\\\":\\\"(.*)\\\",\\\"sign'
         temp = getTempInfo(patten2, item)
         if temp:
             q = temp.replace("\\u003d", "")
-            print(q)
             decodeStr = getDecode(uid, q, url)
             outFile.write(item + '\n')
             outFile.write(decodeStr + '\n')
     outFile.close()
+    inFile.close()
 
 
 if __name__ == '__main__':
@@ -64,4 +85,4 @@ if __name__ == '__main__':
     # getDecode(uid, q, url)
     path = "F:/Code/pythonTest/testFile/logInfo.txt"
     outPath = "F:/Code/pythonTest/testFile/output.txt"
-    decodeFile(path,outPath,url)
+    decodeFile2(path,outPath,url)
